@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
 import java.util.Optional;
+import java.util.logging.LogManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,15 @@ import com.example.demo.model.persistence.repositories.CartRepository;
 import com.example.demo.model.persistence.repositories.UserRepository;
 import com.example.demo.model.requests.CreateUserRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-	
+
+	Logger logger = LoggerFactory.getLogger(UserController.class);
+
 	@Autowired
 	private UserRepository userRepository;
 	
@@ -48,14 +54,17 @@ public class UserController {
 		User user = new User();
 		user.setUsername(createUserRequest.getUsername());
 		Cart cart = new Cart();
+		logger.info("Username", createUserRequest.getUsername());
 		cartRepository.save(cart);
 		user.setCart(cart);
 		if (createUserRequest.getPassword().length() < 7 ||
 		!createUserRequest.getPassword().equals(createUserRequest.getConfirmPassword())) {
+			logger.error("CreateUser request failures");
 			return ResponseEntity.badRequest().build();
 		}
 		user.setPassword(bCryptPasswordEncoder.encode(createUserRequest.getPassword()));
 		userRepository.save(user);
+		logger.info("CreateUser request successes");
 		return ResponseEntity.ok(user);
 	}
 	
